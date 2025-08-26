@@ -22,6 +22,7 @@ export interface PoolData {
   fee: number;
   price?: number;
   address?: string;
+  nativeUrl?: string;
 }
 
 /**
