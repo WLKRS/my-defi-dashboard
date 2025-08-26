@@ -197,6 +197,3 @@ const PoolsPage: React.FC = () => {
       </div>
     );
   }
-
-  // ... restante do JSX permanece igual
-  // (O código abaixo é idêntico ao seu arquivo original, mantendo toda a interface do usuário)
