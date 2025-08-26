@@ -86,26 +86,27 @@ export async function getOrcaPools(): Promise<PoolData[]> {
 
     const prices = await getRealTimePrices();
 
-    return (data || []).slice(0, 10).map((pool: any) => ({
-      id: `orca-${pool.address}`,
-      protocol: "Orca",
-      address: pool.address,
-      tokenA: {
-        symbol: pool.tokenA.symbol || "TOKEN_A",
-        mint: pool.tokenA.mint || "",
-        decimals: pool.tokenA.decimals || 9,
-      },
-      tokenB: {
-        symbol: pool.tokenB.symbol || "TOKEN_B",
-        mint: pool.tokenB.mint || "",
-        decimals: pool.tokenB.decimals || 9,
-      },
-      apy: parseFloat(pool.apy) || Math.random() * 20 + 5,
-      tvl: parseFloat(pool.tvl) || 0,
-      volume24h: parseFloat(pool.volume24h) || 0,
-      fee: parseFloat(pool.fee) || 0.3,
-      price: prices[pool.tokenA.symbol] || 0,
-    }));
+return (data || []).slice(0, 10).map((pool: any) => ({
+  id: `orca-${pool.address}`,
+  protocol: "Orca",
+  address: pool.address,
+  tokenA: {
+    symbol: pool.tokenA.symbol || "TOKEN_A",
+    mint: pool.tokenA.mint || "",
+    decimals: pool.tokenA.decimals || 9,
+  },
+  tokenB: {
+    symbol: pool.tokenB.symbol || "TOKEN_B",
+    mint: pool.tokenB.mint || "",
+    decimals: pool.tokenB.decimals || 9,
+  },
+  apy: parseFloat(pool.apy) || Math.random() * 20 + 5,
+  tvl: parseFloat(pool.tvl) || 0,
+  volume24h: parseFloat(pool.volume24h) || 0,
+  fee: parseFloat(pool.fee) || 0.3,
+  price: prices[pool.tokenA.symbol] || 0,
+  nativeUrl: `https://www.orca.so/liquidity/pools/${pool.address}`, // LINHA NOVA
+}));
   } catch (error) {
     console.error("Erro ao buscar pools da Orca:", error);
     return [];
@@ -136,26 +137,27 @@ export async function getRaydiumPools(): Promise<PoolData[]> {
 
     const prices = await getRealTimePrices();
 
-    return (data.data || []).slice(0, 10).map((pool: any) => ({
-      id: `raydium-${pool.id}`,
-      protocol: "Raydium",
-      address: pool.id,
-      tokenA: {
-        symbol: pool.mintA?.symbol || "TOKEN_A",
-        mint: pool.mintA?.address || "",
-        decimals: pool.mintA?.decimals || 9,
-      },
-      tokenB: {
-        symbol: pool.mintB?.symbol || "TOKEN_B",
-        mint: pool.mintB?.address || "",
-        decimals: pool.mintB?.decimals || 9,
-      },
-      apy: parseFloat(pool.day?.apr) || Math.random() * 25 + 8,
-      tvl: parseFloat(pool.tvl) || 0,
-      volume24h: parseFloat(pool.day?.volume) || 0,
-      fee: parseFloat(pool.feeRate) || 0.25,
-      price: prices[pool.mintA?.symbol] || 0,
-    }));
+return (data.data || []).slice(0, 10).map((pool: any) => ({
+  id: `raydium-${pool.id}`,
+  protocol: "Raydium",
+  address: pool.id,
+  tokenA: {
+    symbol: pool.mintA?.symbol || "TOKEN_A",
+    mint: pool.mintA?.address || "",
+    decimals: pool.mintA?.decimals || 9,
+  },
+  tokenB: {
+    symbol: pool.mintB?.symbol || "TOKEN_B",
+    mint: pool.mintB?.address || "",
+    decimals: pool.mintB?.decimals || 9,
+  },
+  apy: parseFloat(pool.day?.apr) || Math.random() * 25 + 8,
+  tvl: parseFloat(pool.tvl) || 0,
+  volume24h: parseFloat(pool.day?.volume) || 0,
+  fee: parseFloat(pool.feeRate) || 0.25,
+  price: prices[pool.mintA?.symbol] || 0,
+  nativeUrl: `https://raydium.io/liquidity/add/?coin0=${pool.mintA?.address}&coin1=${pool.mintB?.address}`, // LINHA NOVA
+}));
   } catch (error) {
     console.error("Erro ao buscar pools da Raydium:", error);
     return [];
@@ -200,18 +202,19 @@ export async function getMeteoraPoolsSimulated(): Promise<PoolData[]> {
   
   const prices = await getRealTimePrices();
   
-  return [
-    {
-      id: 'meteora-sol-msol-dynamic',
-      protocol: 'Meteora',
-      tokenA: { symbol: 'SOL', mint: 'So11111111111111111111111111111111111111112', decimals: 9 },
-      tokenB: { symbol: 'mSOL', mint: 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So', decimals: 9 },
-      apy: 6.5 + Math.random() * 3,
-      tvl: 25000000 + Math.random() * 10000000,
-      volume24h: 800000 + Math.random() * 600000,
-      fee: 0.1,
-      price: prices.SOL || 0,
-    },
+return [
+  {
+    id: 'meteora-sol-msol-dynamic',
+    protocol: 'Meteora',
+    tokenA: { symbol: 'SOL', mint: 'So11111111111111111111111111111111111111112', decimals: 9 },
+    tokenB: { symbol: 'mSOL', mint: 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So', decimals: 9 },
+    apy: 6.5 + Math.random() * 3,
+    tvl: 25000000 + Math.random() * 10000000,
+    volume24h: 800000 + Math.random() * 600000,
+    fee: 0.1,
+    price: prices.SOL || 0,
+    nativeUrl: 'https://app.meteora.ag/pools', // LINHA NOVA
+  },
     {
       id: 'meteora-usdc-usdt-stable',
       protocol: 'Meteora',
@@ -222,6 +225,7 @@ export async function getMeteoraPoolsSimulated(): Promise<PoolData[]> {
       volume24h: 2000000 + Math.random() * 1000000,
       fee: 0.05,
       price: 1.0,
+      nativeUrl: 'https://app.meteora.ag/pools'
     },
   ];
 }
