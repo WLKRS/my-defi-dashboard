@@ -105,7 +105,7 @@ return (data || []).slice(0, 10).map((pool: any) => ({
   volume24h: parseFloat(pool.volume24h) || 0,
   fee: parseFloat(pool.fee) || 0.3,
   price: prices[pool.tokenA.symbol] || 0,
-  nativeUrl: `https://www.orca.so/liquidity/pools/${pool.address}`, // LINHA NOVA
+  nativeUrl: `https://www.orca.so/liquidity/pools/${pool.address}`,
 }));
   } catch (error) {
     console.error("Erro ao buscar pools da Orca:", error);
@@ -156,7 +156,7 @@ return (data.data || []).slice(0, 10).map((pool: any) => ({
   volume24h: parseFloat(pool.day?.volume) || 0,
   fee: parseFloat(pool.feeRate) || 0.25,
   price: prices[pool.mintA?.symbol] || 0,
-  nativeUrl: `https://raydium.io/liquidity/add/?coin0=${pool.mintA?.address}&coin1=${pool.mintB?.address}`, // LINHA NOVA
+  nativeUrl: `https://raydium.io/liquidity/add/?coin0=${pool.mintA?.address}&coin1=${pool.mintB?.address}`,
 }));
   } catch (error) {
     console.error("Erro ao buscar pools da Raydium:", error);
@@ -213,7 +213,7 @@ return [
     volume24h: 800000 + Math.random() * 600000,
     fee: 0.1,
     price: prices.SOL || 0,
-    nativeUrl: 'https://app.meteora.ag/pools', // LINHA NOVA
+    nativeUrl: 'https://app.meteora.ag/pools',
   },
     {
       id: 'meteora-usdc-usdt-stable',
@@ -225,7 +225,7 @@ return [
       volume24h: 2000000 + Math.random() * 1000000,
       fee: 0.05,
       price: 1.0,
-      nativeUrl: 'https://app.meteora.ag/pools'
+      nativeUrl: 'https://app.meteora.ag/pools',
     },
   ];
 }
