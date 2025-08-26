@@ -68,8 +68,6 @@ export async function getOrcaPools(): Promise<PoolData[]> {
   try {
     console.log("Buscando pools da Orca...");
 
-    // Este é um servidor de API de terceiros que encapsula o SDK da Orca.
-    // Em um ambiente de produção, você pode precisar hospedar isso ou usar o SDK diretamente.
     const response = await fetch("https://orca-api.bisonai.com/pool", {
       method: "GET",
       headers: {
@@ -87,27 +85,27 @@ export async function getOrcaPools(): Promise<PoolData[]> {
 
     const prices = await getRealTimePrices();
 
-return (data || []).slice(0, 10).map((pool: any) => ({
-  id: `orca-${pool.address}`,
-  protocol: "Orca",
-  address: pool.address,
-  tokenA: {
-    symbol: pool.tokenA.symbol || "TOKEN_A",
-    mint: pool.tokenA.mint || "",
-    decimals: pool.tokenA.decimals || 9,
-  },
-  tokenB: {
-    symbol: pool.tokenB.symbol || "TOKEN_B",
-    mint: pool.tokenB.mint || "",
-    decimals: pool.tokenB.decimals || 9,
-  },
-  apy: parseFloat(pool.apy) || Math.random() * 20 + 5,
-  tvl: parseFloat(pool.tvl) || 0,
-  volume24h: parseFloat(pool.volume24h) || 0,
-  fee: parseFloat(pool.fee) || 0.3,
-  price: prices[pool.tokenA.symbol] || 0,
-  nativeUrl: `https://www.orca.so/liquidity/pools/${pool.address}`,
-}));
+    return (data || []).slice(0, 10).map((pool: any) => ({
+      id: `orca-${pool.address}`,
+      protocol: "Orca",
+      address: pool.address,
+      tokenA: {
+        symbol: pool.tokenA.symbol || "TOKEN_A",
+        mint: pool.tokenA.mint || "",
+        decimals: pool.tokenA.decimals || 9,
+      },
+      tokenB: {
+        symbol: pool.tokenB.symbol || "TOKEN_B",
+        mint: pool.tokenB.mint || "",
+        decimals: pool.tokenB.decimals || 9,
+      },
+      apy: parseFloat(pool.apy) || Math.random() * 20 + 5,
+      tvl: parseFloat(pool.tvl) || 0,
+      volume24h: parseFloat(pool.volume24h) || 0,
+      fee: parseFloat(pool.fee) || 0.3,
+      price: prices[pool.tokenA.symbol] || 0,
+      nativeUrl: `https://www.orca.so/liquidity/pools/${pool.address}`,
+    }));
   } catch (error) {
     console.error("Erro ao buscar pools da Orca:", error);
     return [];
@@ -138,27 +136,27 @@ export async function getRaydiumPools(): Promise<PoolData[]> {
 
     const prices = await getRealTimePrices();
 
-return (data.data || []).slice(0, 10).map((pool: any) => ({
-  id: `raydium-${pool.id}`,
-  protocol: "Raydium",
-  address: pool.id,
-  tokenA: {
-    symbol: pool.mintA?.symbol || "TOKEN_A",
-    mint: pool.mintA?.address || "",
-    decimals: pool.mintA?.decimals || 9,
-  },
-  tokenB: {
-    symbol: pool.mintB?.symbol || "TOKEN_B",
-    mint: pool.mintB?.address || "",
-    decimals: pool.mintB?.decimals || 9,
-  },
-  apy: parseFloat(pool.day?.apr) || Math.random() * 25 + 8,
-  tvl: parseFloat(pool.tvl) || 0,
-  volume24h: parseFloat(pool.day?.volume) || 0,
-  fee: parseFloat(pool.feeRate) || 0.25,
-  price: prices[pool.mintA?.symbol] || 0,
-  nativeUrl: `https://raydium.io/liquidity/add/?coin0=${pool.mintA?.address}&coin1=${pool.mintB?.address}`,
-}));
+    return (data.data || []).slice(0, 10).map((pool: any) => ({
+      id: `raydium-${pool.id}`,
+      protocol: "Raydium",
+      address: pool.id,
+      tokenA: {
+        symbol: pool.mintA?.symbol || "TOKEN_A",
+        mint: pool.mintA?.address || "",
+        decimals: pool.mintA?.decimals || 9,
+      },
+      tokenB: {
+        symbol: pool.mintB?.symbol || "TOKEN_B",
+        mint: pool.mintB?.address || "",
+        decimals: pool.mintB?.decimals || 9,
+      },
+      apy: parseFloat(pool.day?.apr) || Math.random() * 25 + 8,
+      tvl: parseFloat(pool.tvl) || 0,
+      volume24h: parseFloat(pool.day?.volume) || 0,
+      fee: parseFloat(pool.feeRate) || 0.25,
+      price: prices[pool.mintA?.symbol] || 0,
+      nativeUrl: `https://raydium.io/liquidity/add/?coin0=${pool.mintA?.address}&coin1=${pool.mintB?.address}`,
+    }));
   } catch (error) {
     console.error("Erro ao buscar pools da Raydium:", error);
     return [];
@@ -203,19 +201,19 @@ export async function getMeteoraPoolsSimulated(): Promise<PoolData[]> {
   
   const prices = await getRealTimePrices();
   
-return [
-  {
-    id: 'meteora-sol-msol-dynamic',
-    protocol: 'Meteora',
-    tokenA: { symbol: 'SOL', mint: 'So11111111111111111111111111111111111111112', decimals: 9 },
-    tokenB: { symbol: 'mSOL', mint: 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So', decimals: 9 },
-    apy: 6.5 + Math.random() * 3,
-    tvl: 25000000 + Math.random() * 10000000,
-    volume24h: 800000 + Math.random() * 600000,
-    fee: 0.1,
-    price: prices.SOL || 0,
-    nativeUrl: 'https://app.meteora.ag/pools',
-  },
+  return [
+    {
+      id: 'meteora-sol-msol-dynamic',
+      protocol: 'Meteora',
+      tokenA: { symbol: 'SOL', mint: 'So11111111111111111111111111111111111111112', decimals: 9 },
+      tokenB: { symbol: 'mSOL', mint: 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So', decimals: 9 },
+      apy: 6.5 + Math.random() * 3,
+      tvl: 25000000 + Math.random() * 10000000,
+      volume24h: 800000 + Math.random() * 600000,
+      fee: 0.1,
+      price: prices.SOL || 0,
+      nativeUrl: 'https://app.meteora.ag/pools',
+    },
     {
       id: 'meteora-usdc-usdt-stable',
       protocol: 'Meteora',
@@ -238,7 +236,6 @@ export async function getAllPoolsRealTime(): Promise<PoolData[]> {
   console.log('Iniciando busca de pools em tempo real...');
   
   try {
-    // Busca pools de todas as DEXs em paralelo
     const [orcaPools, raydiumPools, meteoraPools] = await Promise.allSettled([
       getOrcaPools(),
       getRaydiumPools(),
@@ -247,21 +244,18 @@ export async function getAllPoolsRealTime(): Promise<PoolData[]> {
 
     const allPools: PoolData[] = [];
 
-    // Adiciona pools da Orca
     if (orcaPools.status === 'fulfilled') {
       allPools.push(...orcaPools.value);
     } else {
       console.warn('Erro ao buscar pools da Orca:', orcaPools.reason);
     }
 
-    // Adiciona pools da Raydium
     if (raydiumPools.status === 'fulfilled') {
       allPools.push(...raydiumPools.value);
     } else {
       console.warn('Erro ao buscar pools da Raydium:', raydiumPools.reason);
     }
 
-    // Adiciona pools da Meteora
     if (meteoraPools.status === 'fulfilled') {
       allPools.push(...meteoraPools.value);
     } else {
@@ -269,12 +263,18 @@ export async function getAllPoolsRealTime(): Promise<PoolData[]> {
     }
 
     console.log('Total de pools carregadas:', allPools.length);
-    return allPools;
+    
+    const filteredPools = allPools
+      .filter(pool => pool.tvl >= 10000 && pool.volume24h >= 5000)
+      .sort((a, b) => b.tvl - a.tvl)
+      .slice(0, 10);
+
+    console.log('Pools após filtro:', filteredPools.length);
+    return filteredPools;
 
   } catch (error) {
     console.error('Erro ao carregar pools em tempo real:', error);
     
-    // Fallback com dados estáticos
     const prices = await getRealTimePrices();
     return [
       {
@@ -287,6 +287,7 @@ export async function getAllPoolsRealTime(): Promise<PoolData[]> {
         volume24h: 2300000,
         fee: 0.3,
         price: prices.SOL || 187,
+        nativeUrl: 'https://www.orca.so/liquidity/pools/'
       },
     ];
   }
@@ -306,8 +307,7 @@ export async function getPoolDetails(poolId: string, protocol: string): Promise<
         });
         if (orcaResponse.ok) {
           const data = await orcaResponse.json();
-          // Processar dados específicos da Orca
-          return null; // Implementar conforme necessário
+          return null;
         }
         break;
         
@@ -317,8 +317,7 @@ export async function getPoolDetails(poolId: string, protocol: string): Promise<
         });
         if (raydiumResponse.ok) {
           const data = await raydiumResponse.json();
-          // Processar dados específicos da Raydium
-          return null; // Implementar conforme necessário
+          return null;
         }
         break;
     }
@@ -329,4 +328,3 @@ export async function getPoolDetails(poolId: string, protocol: string): Promise<
     return null;
   }
 }
-
