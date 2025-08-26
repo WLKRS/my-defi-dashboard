@@ -1,19 +1,71 @@
-import React from 'react';
-import WalletConnect from '../components/WalletConnect';
+import { useState, useEffect } from 'react';
+import Head from 'next/head';
+import PoolCard from '../components/PoolCard';
+import { aggregatePools, getSafePools } from '../utils/dex-apis-realtime';
 
-const Home: React.FC = () => {
+export default function Home() {
+  const [pools, setPools] = useState<any[]>([]);
+  const [safePools, setSafePools] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errors, setErrors] = useState<string[]>([]);
+
+  useEffect(() => {
+    const loadPools = async () => {
+      const { pools: aggregatedPools, errors: aggregationErrors } = await aggregatePools();
+      setPools(aggregatedPools);
+      setSafePools(getSafePools(aggregatedPools));
+      setErrors(aggregationErrors);
+      setIsLoading(false);
+    };
+    loadPools();
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-4">
-      <h1 className="text-4xl font-extrabold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">DeFi Dashboard Solana</h1>
-      <p className="text-lg text-gray-300 mb-8 text-center">Conecte sua carteira para começar a gerenciar suas posições DeFi.</p>
-      <WalletConnect />
-      {/* TODO: Adicionar componentes de PnL (Profit and Loss) e PriceTicker (Atualização de Preços em Tempo Real) */}
-      <div className="mt-12 text-gray-500 text-sm text-center">
-        <p>Este é um projeto MVP. Funcionalidades adicionais serão implementadas.</p>
-        <p className="text-red-400 font-bold">Aviso: Este site é non-custodial. Suas chaves privadas nunca são acessadas. Revise sempre as transações na sua carteira.</p>
-      </div>
+    <div className="container mx-auto px-4 py-8">
+      <Head>
+        <title>My DeFi Dashboard</title>
+      </Head>
+
+      <h1 className="text-3xl font-bold text-center mb-8">My DeFi Dashboard</h1>
+
+      {isLoading ? (
+        <div className="text-center">Carregando pools...</div>
+      ) : (
+        <>
+          {/* Seção Pools Seguras */}
+          {safePools.length > 0 && (
+            <div className="mb-8 p-6 bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-400 rounded-xl">
+              <h2 className="text-2xl font-bold text-green-800 mb-4">🛡️ Pools Seguras</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {safePools.map((pool) => (
+                  <PoolCard key={pool.address} pool={pool} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Todas as Pools */}
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Todas as Pools</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {pools.map((pool) => (
+                <PoolCard key={pool.address} pool={pool} />
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {errors.length > 0 && (
+        <div className="mt-8 p-4 bg-red-100 border border-red-400 rounded">
+          <h3 className="font-bold text-red-800">Erros encontrados:</h3>
+          <ul>
+            {errors.map((error, index) => (
+              <li key={index} className="text-red-600">{error}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
-};
-
-export default Home;
+}
