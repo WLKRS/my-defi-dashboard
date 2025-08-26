@@ -1,45 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
-
-interface PoolData {
-  id: string;
-  protocol: string;
-  tokenA: { symbol: string };
-  tokenB: { symbol: string };
-  apy: number;
-  tvl: number;
-  volume24h: number;
-  fee: number;
-  price?: number;
-}
-
-const extractTokenSymbol = (poolName: string, index: number): string => {
-  if (!poolName) return 'TOKEN';
-  
-  const symbols = poolName.split(/[\/\-]/);
-  if (symbols.length >= 2 && index < 2) {
-    return symbols[index].trim().slice(0, 6);
-  }
-  
-  return poolName.split(' ')[0]?.slice(0, 4) || 'TOK';
-};
-
-const calculateRandomAPY = (): number => {
-  return Math.random() * 50 + 5;
-};
-
-const calculateRandomVolume = (): number => {
-  return Math.random() * 1000000 + 10000;
-};
-
-const calculateRandomPrice = (): number => {
-  return Math.random() * 100 + 1;
-};
+import { getAllPoolsRealTime, PoolData } from '../utils/dex-apis-realtime';
 
 const PoolsPage: React.FC = () => {
   const { connected, publicKey } = useWallet();
   
-  const [pools, setPools] = useState<PoolData[]>([]);
+  const [allPools, setAllPools] = useState<PoolData[]>([]);
+  const [safePools, setSafePools] = useState<PoolData[]>([]);
+  const [filteredPools, setFilteredPools] = useState<PoolData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedProtocol, setSelectedProtocol] = useState('Todos');
@@ -57,102 +25,55 @@ const PoolsPage: React.FC = () => {
     setError(null);
     
     try {
-      console.log('Carregando pools agregadas...');
-      const response = await fetch('/api/pools/aggregate');
+      console.log('Carregando pools em tempo real...');
+      const poolsData = await getAllPoolsRealTime();
       
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const aggregatedData = await response.json();
-      const transformedPools: PoolData[] = [];
-      
-      if (aggregatedData.orca && Array.isArray(aggregatedData.orca)) {
-        aggregatedData.orca.forEach((pool: any) => {
-          if (pool.normalized) {
-            transformedPools.push({
-              id: pool.normalized.id,
-              protocol: 'Orca',
-              tokenA: { symbol: extractTokenSymbol(pool.normalized.name, 0) },
-              tokenB: { symbol: extractTokenSymbol(pool.normalized.name, 1) },
-              apy: calculateRandomAPY(),
-              tvl: pool.normalized.tvl || 0,
-              volume24h: calculateRandomVolume(),
-              fee: 0.3,
-              price: calculateRandomPrice()
-            });
-          }
-        });
-      }
-      
-      if (aggregatedData.meteora && Array.isArray(aggregatedData.meteora)) {
-        aggregatedData.meteora.forEach((pool: any) => {
-          if (pool.normalized) {
-            transformedPools.push({
-              id: pool.normalized.id,
-              protocol: 'Meteora',
-              tokenA: { symbol: extractTokenSymbol(pool.normalized.name, 0) },
-              tokenB: { symbol: extractTokenSymbol(pool.normalized.name, 1) },
-              apy: calculateRandomAPY(),
-              tvl: pool.normalized.tvl || 0,
-              volume24h: calculateRandomVolume(),
-              fee: 0.25,
-              price: calculateRandomPrice()
-            });
-          }
-        });
-      }
-      
-      if (aggregatedData.raydium && Array.isArray(aggregatedData.raydium)) {
-        aggregatedData.raydium.forEach((pool: any) => {
-          if (pool.normalized) {
-            transformedPools.push({
-              id: pool.normalized.id,
-              protocol: 'Raydium',
-              tokenA: { symbol: extractTokenSymbol(pool.normalized.name, 0) },
-              tokenB: { symbol: extractTokenSymbol(pool.normalized.name, 1) },
-              apy: calculateRandomAPY(),
-              tvl: pool.normalized.tvl || 0,
-              volume24h: calculateRandomVolume(),
-              fee: 0.25,
-              price: calculateRandomPrice()
-            });
-          }
-        });
-      }
-      
-      setPools(transformedPools);
+      const safeTokens = ['SOL', 'USDC', 'USDT', 'ETH', 'BTC'];
+      const safePoolsFiltered = poolsData.filter(pool => 
+        safeTokens.includes(pool.tokenA.symbol) && 
+        safeTokens.includes(pool.tokenB.symbol)
+      ).slice(0, 5);
+
+      setAllPools(poolsData);
+      setSafePools(safePoolsFiltered);
+      setFilteredPools(poolsData);
       setLastUpdated(new Date());
-      console.log('Pools agregadas carregadas:', transformedPools.length);
-      
-      if (aggregatedData.errors && aggregatedData.errors.length > 0) {
-        console.warn('Erros na agregação:', aggregatedData.errors);
-      }
+      console.log('Pools carregadas:', poolsData.length);
+      console.log('Pools seguras:', safePoolsFiltered.length);
       
     } catch (err) {
-      console.error('Erro ao carregar pools agregadas:', err);
+      console.error('Erro ao carregar pools:', err);
       setError('Erro ao carregar dados das pools. Tente novamente.');
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredPools = pools.filter(pool => 
-    selectedProtocol === 'Todos' || pool.protocol === selectedProtocol
-  );
-
-  const sortedPools = [...filteredPools].sort((a, b) => {
-    switch (sortBy) {
-      case 'apy':
-        return b.apy - a.apy;
-      case 'tvl':
-        return b.tvl - a.tvl;
-      case 'volume':
-        return b.volume24h - a.volume24h;
-      default:
-        return 0;
+  const handleProtocolFilter = (protocol: string) => {
+    setSelectedProtocol(protocol);
+    if (protocol === 'Todos') {
+      setFilteredPools(allPools);
+    } else {
+      setFilteredPools(allPools.filter(pool => pool.protocol === protocol));
     }
-  });
+  };
+
+  const handleSort = (sortType: string) => {
+    setSortBy(sortType);
+    const sorted = [...filteredPools].sort((a, b) => {
+      switch (sortType) {
+        case 'apy':
+          return b.apy - a.apy;
+        case 'tvl':
+          return b.tvl - a.tvl;
+        case 'volume':
+          return b.volume24h - a.volume24h;
+        default:
+          return 0;
+      }
+    });
+    setFilteredPools(sorted);
+  };
 
   const formatCurrency = (value: number) => {
     if (value >= 1000000) {
@@ -171,6 +92,9 @@ const PoolsPage: React.FC = () => {
   const handleAddLiquidity = (pool: PoolData) => {
     setSelectedPool(pool);
     setShowAddLiquidity(true);
+    if (pool.nativeUrl) {
+      window.open(pool.nativeUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const getProtocolColor = (protocol: string) => {
@@ -241,14 +165,62 @@ const PoolsPage: React.FC = () => {
           </div>
         </div>
 
+        {safePools.length > 0 && (
+          <div className="mb-6 p-6 bg-gradient-to-r from-green-900 to-blue-900 border-2 border-green-400 rounded-xl">
+            <h2 className="text-2xl font-bold text-green-300 mb-4">🛡️ Pools Seguras</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {safePools.map((pool) => (
+                <div key={pool.id} className="bg-gray-800 rounded-lg p-4 border border-green-400">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-white">
+                      {pool.tokenA.symbol}/{pool.tokenB.symbol}
+                    </h3>
+                    <span className={`px-2 py-1 rounded text-xs text-white ${getProtocolColor(pool.protocol)}`}>
+                      {pool.protocol}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-2 text-sm text-gray-300 mb-4">
+                    <p>TVL: ${pool.tvl.toLocaleString()}</p>
+                    <p>APR: {pool.apy.toFixed(2)}%</p>
+                    <p>Volume: ${pool.volume24h.toLocaleString()}</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => handleAddLiquidity(pool)}
+                      disabled={!connected}
+                      className="w-full px-3 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded transition-colors"
+                    >
+                      + Liquidez
+                    </button>
+                    
+                    {pool.nativeUrl && (
+                      <a
+                        href={pool.nativeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block w-full text-center px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        🔗 Ver no {pool.protocol}
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center space-x-4 text-sm">
           <span className="text-gray-400">Total de pools:</span>
-          <span className="font-semibold">{pools.length}</span>
+          <span className="font-semibold">{allPools.length}</span>
           <span className="text-gray-400">•</span>
           <span className="text-gray-400">Protocolos:</span>
           <div className="flex space-x-2">
             {['Orca', 'Raydium', 'Meteora'].map(protocol => {
-              const count = pools.filter(p => p.protocol === protocol).length;
+              const count = allPools.filter(p => p.protocol === protocol).length;
               return count > 0 ? (
                 <span key={protocol} className={`px-2 py-1 rounded text-xs text-white ${getProtocolColor(protocol)}`}>
                   {protocol}: {count}
@@ -270,7 +242,7 @@ const PoolsPage: React.FC = () => {
           <label className="text-sm font-medium">Protocolo:</label>
           <select
             value={selectedProtocol}
-            onChange={(e) => setSelectedProtocol(e.target.value)}
+            onChange={(e) => handleProtocolFilter(e.target.value)}
             className="p-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-purple-500 focus:outline-none"
           >
             <option value="Todos">Todos</option>
@@ -284,7 +256,7 @@ const PoolsPage: React.FC = () => {
           <label className="text-sm font-medium">Ordenar por:</label>
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
+            onChange={(e) => handleSort(e.target.value)}
             className="p-2 bg-gray-700 rounded-lg border border-gray-600 focus:border-purple-500 focus:outline-none"
           >
             <option value="apy">APY</option>
@@ -294,17 +266,17 @@ const PoolsPage: React.FC = () => {
         </div>
 
         <div className="text-sm text-gray-400">
-          Mostrando {sortedPools.length} de {pools.length} pools
+          Mostrando {filteredPools.length} de {allPools.length} pools
         </div>
       </div>
 
       <div className="grid gap-4">
-        {sortedPools.length === 0 ? (
+        {filteredPools.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-400">Nenhuma pool encontrada com os filtros selecionados.</p>
           </div>
         ) : (
-          sortedPools.map((pool) => (
+          filteredPools.map((pool) => (
             <div key={pool.id} className="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
@@ -354,13 +326,27 @@ const PoolsPage: React.FC = () => {
                     <p className="font-semibold">{pool.fee}%</p>
                   </div>
 
-                  <button
-                    onClick={() => handleAddLiquidity(pool)}
-                    disabled={!connected}
-                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg transition-colors"
-                  >
-                    Adicionar Liquidez
-                  </button>
+                  <div className="flex flex-col space-y-2">
+                    <button
+                      onClick={() => handleAddLiquidity(pool)}
+                      disabled={!connected}
+                      className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg transition-colors"
+                    >
+                      Adicionar Liquidez
+                    </button>
+                    
+                    {pool.nativeUrl && (
+                      <a
+                        href={pool.nativeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 text-center bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        🔗 Ver no {pool.protocol}
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
