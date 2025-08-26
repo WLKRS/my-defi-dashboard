@@ -46,8 +46,19 @@ export async function getJupiterQuote(
   try {
     const res = await fetch(url.toString(), { signal: ctrl.signal });
     if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(`Quote failed: ${res.status} - ${errorData.message || res.statusText}`);
+      let errorMsg = `Erro na API da Jupiter: ${res.status} - ${res.statusText}`;
+      try {
+        const errorData = await res.json();
+        if (errorData && errorData.error) {
+          errorMsg = `Erro na API da Jupiter: ${errorData.error}`; // Mensagem de erro específica da Jupiter
+        } else if (errorData && errorData.message) {
+          errorMsg = `Erro na API da Jupiter: ${errorData.message}`; // Mensagem de erro genérica
+        }
+      } catch (jsonError) {
+        // Se não conseguir parsear o JSON de erro, usa a mensagem padrão
+        console.error('Erro ao parsear JSON de erro da Jupiter:', jsonError);
+      }
+      throw new Error(errorMsg);
     }
     const data = await res.json();
     return JupiterQuoteSchema.parse(data); // Valida com Zod
@@ -132,5 +143,3 @@ export async function sendAndConfirmTransaction(
 
 // TODO: Adicionar funções para Orca, Raydium, Meteora (listar pools, criar/gerenciar/fechar posição)
 // TODO: Adicionar funções para Pyth/Switchboard (preços on-chain)
-
-
