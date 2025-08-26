@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
-import { getAllPoolsSimple, SimplePoolData } from '../utils/dex-apis-simple';
+import { getAllPools, PoolData } from '../utils/dex-apis';
 
 const PoolsPage: React.FC = () => {
   const { connected, publicKey } = useWallet();
   const { connection } = useConnection();
   
-  const [pools, setPools] = useState<SimplePoolData[]>([]);
+  const [pools, setPools] = useState<PoolData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedProtocol, setSelectedProtocol] = useState('Todos');
   const [sortBy, setSortBy] = useState('apy');
-  const [selectedPool, setSelectedPool] = useState<SimplePoolData | null>(null);
+  const [selectedPool, setSelectedPool] = useState<PoolData | null>(null);
   const [showAddLiquidity, setShowAddLiquidity] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
@@ -26,7 +26,7 @@ const PoolsPage: React.FC = () => {
     
     try {
       console.log('Carregando pools das DEXs...');
-      const poolsData = await getAllPoolsSimple();
+      const poolsData = await getAllPools();
       setPools(poolsData);
       setLastUpdated(new Date());
       console.log('Pools carregadas com sucesso:', poolsData.length);
@@ -71,7 +71,7 @@ const PoolsPage: React.FC = () => {
     }).format(value);
   };
 
-  const handleAddLiquidity = (pool: SimplePoolData) => {
+  const handleAddLiquidity = (pool: PoolData) => {
     setSelectedPool(pool);
     setShowAddLiquidity(true);
   };
@@ -314,13 +314,10 @@ const PoolsPage: React.FC = () => {
 
               <div className="p-4 bg-gray-700 rounded-lg">
                 <p className="text-sm text-gray-400 mb-2">Informações da Pool:</p>
-                <p className="text-sm">APY: <span className="text-green-400 font-semibold">{selectedPool.apy.toFixed(1)}%</span></p>
+                <p className="text-sm">APY: <span className="text-green-400 font-semibold">{selectedPool.apy}%</span></p>
                 <p className="text-sm">Taxa: <span className="font-semibold">{selectedPool.fee}%</span></p>
                 <p className="text-sm">Protocolo: <span className={`font-semibold text-white px-2 py-1 rounded text-xs ${getProtocolColor(selectedPool.protocol)}`}>{selectedPool.protocol}</span></p>
                 <p className="text-sm">TVL: <span className="font-semibold">{formatCurrency(selectedPool.tvl)}</span></p>
-                {selectedPool.price && (
-                  <p className="text-sm">Preço {selectedPool.tokenA.symbol}: <span className="font-semibold">${selectedPool.price.toFixed(2)}</span></p>
-                )}
               </div>
 
               <button
@@ -340,8 +337,8 @@ const PoolsPage: React.FC = () => {
       {/* Aviso */}
       <div className="mt-8 p-4 bg-gray-700 rounded-lg">
         <p className="text-xs text-gray-400">
-          <strong>Dados semi-reais:</strong> As informações são baseadas em dados reais das DEXs com variações dinâmicas. 
-          Os preços são obtidos do CoinGecko em tempo real. 
+          <strong>Dados em tempo real:</strong> As informações são obtidas diretamente das APIs da Orca, Raydium e Meteora. 
+          Os dados podem variar conforme a disponibilidade das APIs. 
           Sempre faça sua própria pesquisa antes de fornecer liquidez.
         </p>
       </div>
@@ -350,4 +347,3 @@ const PoolsPage: React.FC = () => {
 };
 
 export default PoolsPage;
-
