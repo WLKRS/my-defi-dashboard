@@ -7,6 +7,7 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { clusterApiUrl } from '@solana/web3.js';
 
 import '../styles/globals.css';
+import Navbar from '../components/Navbar'; // Importa o componente Navbar
 
 // Default styles that can be overridden by your app
 require('@solana/wallet-adapter-react-ui/styles.css');
@@ -30,7 +31,12 @@ function MyApp({ Component, pageProps }: AppProps) {
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>
-          <Component {...pageProps} />
+          <div className="min-h-screen bg-gray-900 text-white">
+            <Navbar /> {/* Renderiza o Navbar em todas as páginas */}
+            <main className="container mx-auto p-4">
+              <Component {...pageProps} />
+            </main>
+          </div>
         </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
@@ -38,5 +44,4 @@ function MyApp({ Component, pageProps }: AppProps) {
 }
 
 export default MyApp;
-
 
