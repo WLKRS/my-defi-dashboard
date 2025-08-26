@@ -65,47 +65,49 @@ export async function getRealTimePrices(): Promise<Record<string, number>> {
  */
 export async function getOrcaPools(): Promise<PoolData[]> {
   try {
-    console.log('Buscando pools da Orca...');
-    
-    const response = await fetch('https://api.orca.so/v2/solana/pools?size=20&sortBy=liquidity&sortDirection=desc', {
-      method: 'GET',
+    console.log("Buscando pools da Orca...");
+
+    // Este é um servidor de API de terceiros que encapsula o SDK da Orca.
+    // Em um ambiente de produção, você pode precisar hospedar isso ou usar o SDK diretamente.
+    const response = await fetch("https://orca-api.bisonai.com/pool", {
+      method: "GET",
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
-    });
+    } );
 
     if (!response.ok) {
-      console.warn('Erro na API da Orca:', response.status);
+      console.warn("Erro na API da Orca:", response.status);
       return [];
     }
 
     const data = await response.json();
-    console.log('Pools da Orca recebidas:', data.data?.length || 0);
+    console.log("Pools da Orca recebidas:", data.length || 0);
 
     const prices = await getRealTimePrices();
 
-    return (data.data || []).slice(0, 10).map((pool: any) => ({
+    return (data || []).slice(0, 10).map((pool: any) => ({
       id: `orca-${pool.address}`,
-      protocol: 'Orca',
+      protocol: "Orca",
       address: pool.address,
       tokenA: {
-        symbol: pool.tokenMintA?.symbol || 'TOKEN_A',
-        mint: pool.tokenMintA?.address || '',
-        decimals: pool.tokenMintA?.decimals || 9,
+        symbol: pool.tokenA.symbol || "TOKEN_A",
+        mint: pool.tokenA.mint || "",
+        decimals: pool.tokenA.decimals || 9,
       },
       tokenB: {
-        symbol: pool.tokenMintB?.symbol || 'TOKEN_B',
-        mint: pool.tokenMintB?.address || '',
-        decimals: pool.tokenMintB?.decimals || 9,
+        symbol: pool.tokenB.symbol || "TOKEN_B",
+        mint: pool.tokenB.mint || "",
+        decimals: pool.tokenB.decimals || 9,
       },
-      apy: parseFloat(pool.rewardLastUpdatedTimestamp) || Math.random() * 20 + 5,
-      tvl: parseFloat(pool.liquidity) || 0,
+      apy: parseFloat(pool.apy) || Math.random() * 20 + 5,
+      tvl: parseFloat(pool.tvl) || 0,
       volume24h: parseFloat(pool.volume24h) || 0,
-      fee: parseFloat(pool.feeRate) || 0.3,
-      price: prices[pool.tokenA?.symbol] || 0,
+      fee: parseFloat(pool.fee) || 0.3,
+      price: prices[pool.tokenA.symbol] || 0,
     }));
   } catch (error) {
-    console.error('Erro ao buscar pools da Orca:', error);
+    console.error("Erro ao buscar pools da Orca:", error);
     return [];
   }
 }
@@ -115,37 +117,37 @@ export async function getOrcaPools(): Promise<PoolData[]> {
  */
 export async function getRaydiumPools(): Promise<PoolData[]> {
   try {
-    console.log('Buscando pools da Raydium...');
+    console.log("Buscando pools da Raydium...");
     
-    const response = await fetch('https://api-v3.raydium.io/pools/info/list', {
-      method: 'GET',
+    const response = await fetch("https://api-v3.raydium.io/pools/info/list", {
+      method: "GET",
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
-    });
+    } );
 
     if (!response.ok) {
-      console.warn('Erro na API da Raydium:', response.status);
+      console.warn("Erro na API da Raydium:", response.status);
       return [];
     }
 
     const data = await response.json();
-    console.log('Pools da Raydium recebidas:', data.data?.length || 0);
+    console.log("Pools da Raydium recebidas:", data.data?.length || 0);
 
     const prices = await getRealTimePrices();
 
     return (data.data || []).slice(0, 10).map((pool: any) => ({
       id: `raydium-${pool.id}`,
-      protocol: 'Raydium',
+      protocol: "Raydium",
       address: pool.id,
       tokenA: {
-        symbol: pool.mintA?.symbol || 'TOKEN_A',
-        mint: pool.mintA?.address || '',
+        symbol: pool.mintA?.symbol || "TOKEN_A",
+        mint: pool.mintA?.address || "",
         decimals: pool.mintA?.decimals || 9,
       },
       tokenB: {
-        symbol: pool.mintB?.symbol || 'TOKEN_B',
-        mint: pool.mintB?.address || '',
+        symbol: pool.mintB?.symbol || "TOKEN_B",
+        mint: pool.mintB?.address || "",
         decimals: pool.mintB?.decimals || 9,
       },
       apy: parseFloat(pool.day?.apr) || Math.random() * 25 + 8,
@@ -155,7 +157,7 @@ export async function getRaydiumPools(): Promise<PoolData[]> {
       price: prices[pool.mintA?.symbol] || 0,
     }));
   } catch (error) {
-    console.error('Erro ao buscar pools da Raydium:', error);
+    console.error("Erro ao buscar pools da Raydium:", error);
     return [];
   }
 }
