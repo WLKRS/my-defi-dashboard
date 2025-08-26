@@ -11,6 +11,12 @@ export const JupiterQuoteSchema = z.object({
   slippageBps: z.number(),
   priceImpactPct: z.number(),
   swapMode: z.string(),
+  // Adicionando campos que aparecem na resposta da API, mas não estavam no schema
+  platformFee: z.any().nullable().optional(), // Pode ser null ou um objeto
+  routePlan: z.array(z.any()), // Array de objetos com detalhes da rota
+  contextSlot: z.number().optional(),
+  swapLogs: z.array(z.string()).optional(),
+  timeTaken: z.number().optional(),
   // Adicione outras propriedades relevantes da cotação da Jupiter
   // https://jup.ag/api/docs/static/index.html#/quote-api/getQuote
 });
